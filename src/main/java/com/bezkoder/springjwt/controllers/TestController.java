@@ -4,6 +4,7 @@ import com.bezkoder.springjwt.models.ERole;
 import com.bezkoder.springjwt.models.Role;
 import com.bezkoder.springjwt.repository.RoleRepository;
 import com.bezkoder.springjwt.repository.UserRepository;
+import com.bezkoder.springjwt.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -22,6 +23,9 @@ public class TestController {
 
   @Autowired
   private RoleRepository roleRepository;
+
+  @Autowired
+  UserService userService;
   @GetMapping("/all")
   public String allAccess() {
     return "Public Content.";
@@ -34,11 +38,6 @@ public class TestController {
     return "Bienvenu " + roleRepository.findByName(ERole.ROLE_USER).get().getName();
   }
 
-  @GetMapping("/mod")
-  @PreAuthorize("hasRole('MODERATOR')")
-  public String moderatorAccess() {
-    return "Moderator Board.";
-  }
 
   @GetMapping("/admin")
   @PreAuthorize("hasRole('ADMIN')")

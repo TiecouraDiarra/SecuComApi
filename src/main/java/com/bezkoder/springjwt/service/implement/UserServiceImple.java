@@ -6,7 +6,17 @@ import com.bezkoder.springjwt.repository.RoleRepository;
 import com.bezkoder.springjwt.repository.UserRepository;
 import com.bezkoder.springjwt.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
+
+@Service
 public class UserServiceImple implements UserService {
 
+    @Autowired
+    UserRepository userRepository;
+    @Override
+    public List<User> getUsers() {
+        return userRepository.findAll();
+    }
 }
