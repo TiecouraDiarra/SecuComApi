@@ -22,6 +22,9 @@ public class TestController {
   private UserRepository userRepository;
 
   @Autowired
+  private UserService usersCrud;
+
+  @Autowired
   private RoleRepository roleRepository;
 
   @Autowired

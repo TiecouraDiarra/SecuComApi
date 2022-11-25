@@ -3,6 +3,7 @@ package com.bezkoder.springjwt.controllers;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.oidc.OidcIdToken;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import com.bezkoder.springjwt.models.ERole;
@@ -33,10 +41,13 @@ import com.bezkoder.springjwt.security.services.UserDetailsImpl;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/auth")
+//@RequestMapping("/api/auth")
 public class AuthController {
   @Autowired
   AuthenticationManager authenticationManager;
+
+  @Autowired
+  OAuth2AuthorizedClientService loadAuthorizedClientService;
 
   @Autowired
   UserRepository userRepository;
@@ -123,29 +134,46 @@ public class AuthController {
     return ResponseEntity.ok(new MessageResponse("Collaborateur ajouté avec succès !"));
   }
 
-  @GetMapping("/toususers")
-  public ResponseEntity<List<User>> getUsers(){
-    return ResponseEntity.ok().body(userService.getUsers());
-  }
-
-  /*@RolesAllowed("USER")
   @RequestMapping("/**")
-  public String getUser()
-  {
-    return "Bienvenu User";
+  private StringBuffer getOauth2LoginInfo(Principal user){
+
+    StringBuffer protectedInfo = new StringBuffer();
+    OAuth2User principal = ((OAuth2AuthenticationToken) user).getPrincipal();
+
+    OAuth2AuthenticationToken authToken = ((OAuth2AuthenticationToken) user);
+    OAuth2AuthorizedClient authClient = this.loadAuthorizedClientService.loadAuthorizedClient(authToken.getAuthorizedClientRegistrationId(), authToken.getName());
+    if(authToken.isAuthenticated()){
+
+      Map<String,Object> userAttributes = ((DefaultOAuth2User) authToken.getPrincipal()).getAttributes();
+
+      String userToken = authClient.getAccessToken().getTokenValue();
+      protectedInfo.append("Bienvenu, " + userAttributes.get("name")+"<br><br>");
+      protectedInfo.append("e-mail: " + userAttributes.get("email")+"<br><br>");
+      protectedInfo.append("Access Token: " + userToken+"<br><br>");
+      OidcIdToken idToken = getIdToken(principal);
+      if(idToken != null) {
+
+        protectedInfo.append("idToken value: " + idToken.getTokenValue()+"<br><br>");
+        protectedInfo.append("Token mapped values <br><br>");
+
+        Map<String, Object> claims = idToken.getClaims();
+
+        for (String key : claims.keySet()) {
+          protectedInfo.append("  " + key + ": " + claims.get(key)+"<br>");
+        }
+      }
+    }
+    else{
+      protectedInfo.append("NA");
+    }
+    return protectedInfo;
+  }
+  private OidcIdToken getIdToken(OAuth2User principal){
+    if(principal instanceof DefaultOidcUser) {
+      DefaultOidcUser oidcUser = (DefaultOidcUser)principal;
+      return oidcUser.getIdToken();
+    }
+    return null;
   }
 
-  @RolesAllowed({"USER","ADMIN"})
-  @RequestMapping("/admin")
-  public String getAdmin()
-  {
-
-    return "Bienvenu Admin";
-  }
-
-  @RequestMapping("/*")
-  public String getGithub(Principal col)
-  {
-    return "Bienvenu, " + userRepository.findByUsername(col.getName()).get().getUsername();
-  }*/
 }
