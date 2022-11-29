@@ -33,6 +33,7 @@ public class UserServiceImple implements UserService {
 
     @Override
     public String Supprimer(Long id_users) {
+        log.info("Affichage de tous les collaborateur");
         repositoryUsers.deleteById(id_users);
         log.info("Suppression d'un collaborateur");
         return "Supprimer avec succes";
@@ -41,6 +42,7 @@ public class UserServiceImple implements UserService {
 
     @Override
     public String Modifier(User users) {
+
         return repositoryUsers.findById(users.getId()).map(
                 use ->{
                     use.setEmail(users.getEmail());
@@ -49,7 +51,9 @@ public class UserServiceImple implements UserService {
                     use.setPassword(passwordEncoder.encode(users.getPassword()));
 
                     repositoryUsers.save(use);
+                    log.info("Modification d'un collaborateur");
                     return "Modification reussie avec succès";
+
                 }
         ).orElseThrow(() -> new RuntimeException("Cet utilisateur n'existe pas"));
 
